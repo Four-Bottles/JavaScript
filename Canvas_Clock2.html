@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <style media="screen">
+        canvas {
+            border: 1px solid blue;
+        }
+    </style>
+</head>
+
+<body onload="start()">
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <script type="text/javascript">
+        // JavaScript Documentvar canvas;
+        var context; //先注册两个全局变量画布酱和画笔酱
+        function start() {
+            canvas = document.querySelector('#canvas'); //把画布传进来了
+            context = canvas.getContext('2d'); //拿到2d的画笔，
+            setInterval("paint()", 1000);
+        }
+
+        function paint() //从这开始作画了
+        {
+            x = canvas.width / 2;
+            y = canvas.height / 2; //圆心
+            r = Math.min(canvas.width / 2, canvas.height / 2) - 25; //考虑到复用是可以方便的该钟的大小，把半径设为了由画布决定的
+            context.clearRect(0, 0, canvas.width, canvas.height); //清空画布  每次也要清空画布！
+            context.save();    // 保存了默认设置和变换 fillStyle（黑色）, strokeStyle 等值
+
+            /*下面开始画表盘*/
+            context.fillStyle = "#CCCCCC";
+            context.strokeStyle = "blue";
+            context.beginPath();
+            context.arc(x, y, r, 0, 2 * Math.PI, 0);
+            context.stroke();
+            context.fill();
+            context.closePath();
+            context.restore();   // 弹出的是上文保存的默认的状态，所以文本字体是黑色，并不是灰色。
+            r -= 10;
+            // drawtext(context.fillStyle, 230, 10)
+            drawtext('1', x + (0.5 * r), y - (0.88 * r));
+            drawtext('2', x + (0.866 * r), y - (0.5 * r));
+            drawtext('3', x + r, y);
+            drawtext('4', x + (0.866 * r), y + (0.5 * r));
+            drawtext('5', x + (0.5 * r), y + (0.866 * r));
+            drawtext('6', x, y + r);
+            drawtext('7', x - (0.5 * r), y + (0.866 * r));
+            drawtext('8', x - (0.886 * r), y + (0.49 * r));
+            drawtext('9', x - r, y);
+            drawtext('10', x - (0.886 * r), y - (0.50 * r));
+            drawtext('11', x - (0.51 * r), y - (0.88 * r));
+            drawtext('12', x, 35);
+            /*下面开始获取系统时间*/
+            var date = new Date();
+            var h = date.getHours();
+            var m = date.getMinutes();
+            var s = date.getSeconds();
+            /*下面开始画针*/
+            context.save();          // 保存的依然是默认的状态值
+            context.beginPath();
+            context.lineWidth = 1;
+            context.fillStyle = "gray";
+            context.strokeStyle = "red";
+            // 画法比较独特，从末端向中心点（x, y）画表针。末端用圆弧来画，但起始位和终点位一样，所以只画出一个点，再用lineTo()函数来画线即可得表针
+            context.arc(x, y, r * 0.4, (h / 12) * 6.22 - 1.57 + (m / 60) * 0.52, (h / 12) * 6.22 - 1.57 + (m / 60) * 0.52, 0)     // 时针
+            context.lineTo(x, y);
+            context.arc(x, y, r * 0.6, (m / 60) * 6.20 - 1.57, (m / 60) * 6.22 - 1.57, 0)             // 分针
+            context.lineTo(x, y);
+            context.arc(x, y, r * 0.7, (s / 60) * 6.27 - 1.57, (s / 60) * 6.28 - 1.57, 0)          // 秒针
+            context.lineTo(x, y);
+            context.fill();
+            context.stroke();
+            context.closePath();
+            context.restore();     // 为了弹出默认设置。因为下一轮的 paint 开头会保存一个前一轮的状态，如果不弹出默认设置，那么
+                                   // 下一轮 save（）保存进堆栈的状态就是上面为了画表针设置的fillStyle值，就不是默认值了，明显会影响画
+            context.fillText(date, 50, 20)
+        }
+
+        function drawtext(text, x, y)
+        {
+            x -= (context.measureText(text).width / 2);
+            y += 9;
+            context.font = 'bold 16px 宋体';
+            context.fillText(text, x, y);
+        }
+    </script>
+</body>
+
+</html>
