@@ -1,0 +1,113 @@
+<!-- Author：宁 -->
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <title> JavaScript简易版2D Aim Hero </title>
+    <style media="screen">
+        /*让画布透明*/
+
+        #canvas {
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="1000" height="500"></canvas>
+    <hr>
+    <input id="balls" type="range" min="1" max="50" value="0">
+    <script type="text/javascript">
+        var canvas = document.querySelector("#canvas")
+        var context = canvas.getContext("2d")
+        var log = console.log.bind(console) // 不要搞反了
+        var width = canvas.width
+        var height = canvas.height
+        var xPoint = 1
+        var yPoint = 1
+        var lowR = 5 // 球的初始大小
+        var highR = 10 // 球的最大
+        var size = 10 // 球的初始个数
+        var count = size // 剩余的球个数
+        var rangeH = 0 // 画布离最上方的距离
+
+        var getPoint = function() { // 得到随机的点坐标
+            xPoint = Math.random() * width + 1
+            yPoint = Math.random() * height + rangeH + 1
+        }
+
+        var Circle = function() { // 画点对象的构造函数
+            getPoint()
+            this.xCircle = xPoint
+            this.yCircle = yPoint
+            this.radius = lowR
+            this.state = true
+        }
+
+        var drawPoint = function(circle) { // 画点
+            context.beginPath()
+            context.fillStyle = "yellow"
+            context.strokeStyle = "blue"
+            if (circle.state && (circle.radius <= highR)) {
+                context.arc(circle.xCircle, circle.yCircle, circle.radius, 0, 2 * Math.PI, false)
+            }
+            circle.radius += 0.05
+            context.fill()
+            context.stroke()
+            context.closePath()
+        }
+        var cirArr
+        var newBalls = function(size) { // 声明球对象
+            cirArr = new Array(size)
+            count = size
+            for (var i = 0; i < cirArr.length; i++) {
+                cirArr[i] = new Circle()
+            }
+        }
+        newBalls(size)
+        var balls = document.querySelector("#balls")
+
+        var myClick = function(e) {
+            var cntX = e.clientX // 鼠标相对于浏览器页面的位置
+            var cntY = e.clientY
+            var canBox = canvas.getBoundingClientRect() // canvas 相对于浏览器页面的位置
+            var canX = cntX - canBox.left // 鼠标相对于canvas的位置
+            var canY = cntY - canBox.top
+            // log(canX + "  " + canY + "   ")
+            for (var i = 0; i < cirArr.length; i++) {
+                // log(cirArr[i].xCircle + "    " + cirArr[i].yCircle)
+                var dist = Math.pow(cirArr[i].xCircle - canX, 2) + Math.pow(cirArr[i].yCircle - canY, 2)
+                if (dist <= Math.pow(cirArr[i].radius, 2)) {
+                    cirArr[i].state = false
+                    count--
+                }
+            }
+        }
+        canvas.addEventListener("click", myClick) // 画布添加鼠标点击响应
+        balls.addEventListener("input", function(e) { // 滑动条添加滑动响应
+            var bs = e.target
+            size = Number(bs.value)
+            newBalls(size)
+        })
+
+        setInterval(function() { // 每一定的时间运行一次
+            context.clearRect(0, rangeH, width, height)
+            context.fillStyle = "gray"
+            context.fillRect(0, rangeH, width, height)
+            for (var i = 0; i < cirArr.length; i++) {
+                drawPoint(cirArr[i])
+                // 所有的点变到最大，或点击完所有的点后，开始选取新的点
+                if (!count || ((i == cirArr.length - 1) && (cirArr[i].radius >= highR))) {
+                    log("count:" + count + "   " + "i:" + i)
+                    for (var j = 0; j < cirArr.length; j++) {
+                        cirArr[j] = new Circle()
+                        count = size
+                    }
+                }
+            }
+        }, 60)
+    </script>
+</body>
+
+</html>
